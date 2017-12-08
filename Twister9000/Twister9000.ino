@@ -11,12 +11,51 @@
 #define WS A0     //water sensor analog in
 #define PUMP 10   //water pump pin
 
+DS1302 rtc(CLK_RST, CLK_IO, CLK_SCLK);
+
+const int water_full = 600;
+const int water_empty = 300;
+int water_level;
+
+int food_refill_time_ms = 1000; //miliseconds
+
 void setup()
 {
-  
+  servo.attach(SERVO);
+  pinMode(PUMP, OUTPUT);
+  pinMode(SERVO_ENABLE, OUTPUT);
+  irrecv.enableIRIn();
+  rtc.halt(false);
 }
 
 void loop()
 {
  
 }
+
+void refill_water()
+{
+  
+  water_level = analogRead(WS);
+  if(water_level > water_empty) return;
+  
+  digitalWrite(PUMP, HIGH);
+  do
+  {
+    water_level = analogRead(WS);
+    delay(100);
+  }while(water_level < water_full);
+  digitalWrite(PUMP, LOW);  
+}
+
+void refill_food()
+{
+  digitalWrite(SERVO_ENABLE, HIGH);
+  servo.writeMicroseconds(0);
+  delay(food_refill_time_ms);
+  servo.writeMicroseconds(1500);
+  delay(1000);  //wating for sservo to stabilize
+  digitalWrite(SERVO_ENABLE, LOW);
+}
+
+
