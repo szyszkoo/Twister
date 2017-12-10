@@ -11,12 +11,12 @@
 #define WS A0     //water sensor analog in
 #define PUMP 10   //water pump pin
 
-struct feedingtime
+typedef struct
 {
   Time::Day day;
   uint8_t hour;
   uint8_t minute;
-};
+}  feedingtime;
 
 //defining all important thingies
 DS1302 rtc(CLK_RST, CLK_IO, CLK_SCLK);
@@ -28,6 +28,9 @@ int water_level;
 const int water_full = 600;
 const int water_empty = 300;
 int food_refill_time_ms = 1000; //miliseconds
+
+feedingtime feedingcalendar[10]; //this is supposed to be an array with feeding dates
+                                 //and i really don't know if this will work
 
 void setup()
 {
