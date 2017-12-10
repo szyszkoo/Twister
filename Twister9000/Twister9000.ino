@@ -11,12 +11,22 @@
 #define WS A0     //water sensor analog in
 #define PUMP 10   //water pump pin
 
-DS1302 rtc(CLK_RST, CLK_IO, CLK_SCLK);
+struct feedingtime
+{
+  Time::Day day;
+  uint8_t hour;
+  uint8_t minute;
+};
 
-const int water_full = 600;
-const int water_empty = 300;
+//defining all important thingies
+DS1302 rtc(CLK_RST, CLK_IO, CLK_SCLK);
+Servo servo;
+IRrecv irrecv(IR);
 int water_level;
 
+//defining model parameters
+const int water_full = 600;
+const int water_empty = 300;
 int food_refill_time_ms = 1000; //miliseconds
 
 void setup()
@@ -30,22 +40,22 @@ void setup()
 
 void loop()
 {
- 
+
 }
 
 void refill_water()
 {
-  
+
   water_level = analogRead(WS);
-  if(water_level > water_empty) return;
-  
+  if (water_level > water_empty) return;
+
   digitalWrite(PUMP, HIGH);
   do
   {
     water_level = analogRead(WS);
     delay(100);
-  }while(water_level < water_full);
-  digitalWrite(PUMP, LOW);  
+  } while (water_level < water_full);
+  digitalWrite(PUMP, LOW);
 }
 
 void refill_food()
