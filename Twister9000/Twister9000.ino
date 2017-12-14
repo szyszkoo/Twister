@@ -32,6 +32,19 @@ int food_refill_time_ms = 1000; //miliseconds
 feedingtime feedingcalendar[10]; //this is supposed to be an array with feeding dates
                                  //and i really don't know if this will work
 
+feedingtime feedingtest;
+String dayAsString(const Time::Day day) {
+  switch (day) {
+    case Time::kSunday: return "Sunday";
+    case Time::kMonday: return "Monday";
+    case Time::kTuesday: return "Tuesday";
+    case Time::kWednesday: return "Wednesday";
+    case Time::kThursday: return "Thursday";
+    case Time::kFriday: return "Friday";
+    case Time::kSaturday: return "Saturday";
+  }
+  return "(unknown day)";
+}
 void setup()
 {
   servo.attach(SERVO);
@@ -39,11 +52,37 @@ void setup()
   pinMode(SERVO_ENABLE, OUTPUT);
   irrecv.enableIRIn();
   rtc.halt(false);
+  //following things are here only for development testing purposes
+  feedingtest.day = Time::kWednesday;
+  feedingtest.hour = 22;
+  feedingtest.minute = 20;
+  Serial.begin(9600);
+  Serial.println("halo halo");
 }
 
 void loop()
 {
+   Time t = rtc.time();
 
+  // Name the day of the week.
+  const String day = dayAsString(t.day);
+
+  // Format the time and date and insert into the temporary buffer.
+  char buf[50];
+  snprintf(buf, sizeof(buf), "%s %04d-%02d-%02d %02d:%02d:%02d",
+           day.c_str(),
+           t.yr, t.mon, t.date,
+           t.hr, t.min, t.sec);
+
+  // Print the formatted string to serial so we can see the time.
+  Serial.println(buf);
+
+  Serial.println("should we feed bro?");
+  if(isfeedingtime(feedingtest))
+    Serial.println("Yeaaah");
+   else
+    Serial.println("Nope.");
+    delay(2000);
 }
 
 void refill_water()
@@ -71,4 +110,12 @@ void refill_food()
   digitalWrite(SERVO_ENABLE, LOW);
 }
 
+bool isfeedingtime(feedingtime ftime)
+{
+  Time currenttime = rtc.time();
+  if((currenttime.day == ftime.day)
+    &&(currenttime.hr == ftime.hour)
+    &&(currenttime.min == ftime.minute)) return true;
+    else return false;
+}
 
