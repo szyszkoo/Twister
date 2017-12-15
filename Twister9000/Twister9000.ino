@@ -13,9 +13,10 @@
 
 typedef struct
 {
-  Time::Day day;
+  //Time::Day day;
   uint8_t hour;
   uint8_t minute;
+  bool wasFed =false;
 }  feedingtime;
 
 //defining all important thingies
@@ -23,13 +24,17 @@ DS1302 rtc(CLK_RST, CLK_IO, CLK_SCLK);
 Servo servo;
 IRrecv irrecv(IR);
 int water_level;
+int i;
+int j;
 
 //defining model parameters
 const int water_full = 600;
 const int water_empty = 300;
+const int feedingsPerDay = 2;
 int food_refill_time_ms = 1000; //miliseconds
+bool isFed[feedingsPerDay]; //array with information if there were feedings 
 
-feedingtime feedingcalendar[10]; //this is supposed to be an array with feeding dates
+feedingtime feedingcalendar[feedingsPerDay]; //this is supposed to be an array with feeding dates
                                  //and i really don't know if this will work
 
 feedingtime feedingtest;
@@ -53,11 +58,12 @@ void setup()
   irrecv.enableIRIn();
   rtc.halt(false);
   //following things are here only for development testing purposes
-  feedingtest.day = Time::kWednesday;
+  //feedingtest.day = Time::kWednesday;
   feedingtest.hour = 22;
   feedingtest.minute = 20;
   Serial.begin(9600);
-  Serial.println("halo halo");
+  i=0;
+  j=0;
 }
 
 void loop()
@@ -76,13 +82,17 @@ void loop()
 
   // Print the formatted string to serial so we can see the time.
   Serial.println(buf);
-
-  Serial.println("should we feed bro?");
-  if(isfeedingtime(feedingtest))
-    Serial.println("Yeaaah");
-   else
-    Serial.println("Nope.");
-    delay(2000);
+if(CanWeFeed(feedingcalendar, feedingsPerDay))
+{
+  Serial.println("we should feed now!!!!");
+  refill_food(); // feeding time :D
+}
+//  Serial.println("should we feed bro?");
+//  if(isfeedingtime(feedingtest))
+//    Serial.println("Yeaaah");
+//   else
+//    Serial.println("Nope.");
+//    delay(2000);
 }
 
 void refill_water()
@@ -110,12 +120,40 @@ void refill_food()
   digitalWrite(SERVO_ENABLE, LOW);
 }
 
-bool isfeedingtime(feedingtime ftime)
+//bool isfeedingtime(feedingtime ftime)
+//{
+//  Time currenttime = rtc.time();
+//  if((currenttime.day == ftime.day)
+//    &&(currenttime.hr == ftime.hour)
+//    &&(currenttime.min == ftime.minute)) return true;
+//    else return false;
+//}
+bool CanWeFeed(feedingtime ftime[], int arraySize)
 {
   Time currenttime = rtc.time();
-  if((currenttime.day == ftime.day)
-    &&(currenttime.hr == ftime.hour)
-    &&(currenttime.min == ftime.minute)) return true;
+  
+  if(((currenttime.hr > ftime[i].hour)
+    ||((currenttime.hr == ftime[i].hour) && (currenttime.min>= ftime[i].minute)))
+    &&(ftime[i].wasFed == false)) 
+    {
+      ftime[i].wasFed = true;
+      i++;
+      if(i==arraySize) // the day is over
+      {
+        i=0;
+        for(j=0;j<=arraySize;j++)
+        {
+          ftime[j].wasFed = false;
+        }
+      }
+      return true;
+    }
     else return false;
 }
+//bool CanWeFeed (feedingtime ftime)
+//{
+//  Time currenttime = rtc.time();
+//  if(
+//}
+
 
