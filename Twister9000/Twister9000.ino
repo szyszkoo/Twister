@@ -134,7 +134,7 @@ void refill_food()
   servo.writeMicroseconds(0);
   delay(food_refill_time_ms);
   servo.writeMicroseconds(1500);
-  delay(1000);  //wating for sservo to stabilize
+  delay(1000);  //wating for servo to stabilize
   digitalWrite(SERVO_ENABLE, LOW);
 }
 
@@ -147,15 +147,15 @@ bool CanWeFeed(feedingtime ftime[], int arraySize)
   {
     return false;
   }
-  else if(currenttime.hr>ftime[i].hour|| (currenttime.hr==ftime[i].hour&&currenttime.min>ftime[i].minute) )
+  else if(currenttime.hr>ftime[i].hour || (currenttime.hr==ftime[i].hour&&currenttime.min>ftime[i].minute))
     {
       ftime[i].wasFed = true;
       i++;
-      if(i==arraySize) // the day is over
+      if(i==arraySize) // all of the feedings have been done today
       {
         i=0;
       }
-      if(currenttime.hr == 0 && currenttime.min == 0)
+      if(currenttime.hr == 0 && currenttime.min == 0) // end of the day
       {
         for(j=0;j<=arraySize;j++)
         {
