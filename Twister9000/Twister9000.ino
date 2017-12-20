@@ -30,7 +30,7 @@ int j;
 //defining model parameters
 const int water_full = 600;
 const int water_empty = 300;
-const int feedingsPerDay = 2;
+#define feedingsPerDay 2
 int food_refill_time_ms = 1000; //miliseconds
 bool isFed[feedingsPerDay]; //array with information if there were feedings 
 
@@ -59,8 +59,10 @@ void setup()
   rtc.halt(false);
   //following things are here only for development testing purposes
   //feedingtest.day = Time::kWednesday;
-  feedingtest.hour = 22;
-  feedingtest.minute = 20;
+  feedingcalendar[0].hour = 19;
+  feedingcalendar[0].minute = 44;
+   feedingcalendar[1].hour = 19;
+  feedingcalendar[1].minute = 57;
   Serial.begin(9600);
   i=0;
   j=0;
@@ -87,6 +89,11 @@ if(CanWeFeed(feedingcalendar, feedingsPerDay))
   Serial.println("we should feed now!!!!");
   refill_food(); // feeding time :D
 }
+else
+{
+  Serial.println("no feeding");
+}
+delay(3000);
 //  Serial.println("should we feed bro?");
 //  if(isfeedingtime(feedingtest))
 //    Serial.println("Yeaaah");
@@ -138,10 +145,10 @@ bool CanWeFeed(feedingtime ftime[], int arraySize)
     {
       ftime[i].wasFed = true;
       i++;
-      if(i==arraySize) // the day is over
+      if(i == arraySize) // the day is over
       {
         i=0;
-        for(j=0;j<=arraySize;j++)
+        for(j = 0; j <= arraySize; j++)
         {
           ftime[j].wasFed = false;
         }
