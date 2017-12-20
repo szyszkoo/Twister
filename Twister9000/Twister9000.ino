@@ -28,16 +28,15 @@ int i;
 int j;
 
 //defining model parameters
-const int water_full = 600;
-const int water_empty = 300;
+const int water_full = 650;
+const int water_empty = 500;
 #define feedingsPerDay 2
-int food_refill_time_ms = 1000; //miliseconds
+int food_refill_time_ms = 3000; //miliseconds
 bool isFed[feedingsPerDay]; //array with information if there were feedings 
 
 feedingtime feedingcalendar[feedingsPerDay]; //this is supposed to be an array with feeding dates
                                  //and i really don't know if this will work
 
-feedingtime feedingtest;
 
 
 String dayAsString(const Time::Day day) {
@@ -54,12 +53,12 @@ String dayAsString(const Time::Day day) {
 }
 void setup()
 {
-  feedingcalendar[0].hour = 16;
-  feedingcalendar[0].minute = 44;
-  feedingcalendar[0].wasFed=false;
-  feedingcalendar[1].hour = 16;
-  feedingcalendar[1].minute = 46;
-  feedingcalendar[1].wasFed=false;
+  // creating the feeding calendar
+  feedingcalendar[0].hour = 12;
+  feedingcalendar[0].minute = 36;
+  feedingcalendar[1].hour = 12;
+  feedingcalendar[1].minute = 37;
+  
   servo.attach(SERVO);
   pinMode(PUMP, OUTPUT);
   pinMode(SERVO_ENABLE, OUTPUT);
@@ -99,21 +98,16 @@ void loop()
     Serial.print(feedingcalendar[j].wasFed);
     Serial.print("  ");
   }
-if(CanWeFeed(feedingcalendar, feedingsPerDay)==true)
-{
-  Serial.println("we should feed now!!!!");
-  refill_food(); // feeding time :D
-}
+  if(CanWeFeed(feedingcalendar, feedingsPerDay)==true)
+  {
+    Serial.println("we should feed now!!!!");
+    refill_food(); // feeding time :D
+  }
+  
+  else Serial.println("No feeding, sorry :(");
 
-else Serial.println("No feeding, sorry :(");
+ // refill_water();
 
->>>>>>> 1fec765ae6ff5590dde50942ce757ef0f88f0858
-//  Serial.println("should we feed bro?");
-//  if(isfeedingtime(feedingtest))
-//    Serial.println("Yeaaah");
-//   else
-//    Serial.println("Nope.");
-//    delay(2000);
 }
 
 void refill_water()
@@ -137,7 +131,7 @@ void refill_food()
   servo.writeMicroseconds(0);
   delay(food_refill_time_ms);
   servo.writeMicroseconds(1500);
-  delay(1000);  //wating for servo to stabilize
+  //delay(1000);  //wating for servo to stabilize
   digitalWrite(SERVO_ENABLE, LOW);
 }
 
@@ -150,7 +144,7 @@ bool CanWeFeed(feedingtime ftime[], int arraySize)
   {
     return false;
   }
-  else if(currenttime.hr>ftime[i].hour || (currenttime.hr==ftime[i].hour&&currenttime.min>ftime[i].minute))
+  else if(currenttime.hr>ftime[i].hour || (currenttime.hr==ftime[i].hour&&currenttime.min>=ftime[i].minute))
     {
       ftime[i].wasFed = true;
       i++;
@@ -162,7 +156,6 @@ bool CanWeFeed(feedingtime ftime[], int arraySize)
       if(currenttime.hr == 0 && currenttime.min == 0) // end of the day
       {
         for(j=0;j<=arraySize;j++)
->>>>>>> 1fec765ae6ff5590dde50942ce757ef0f88f0858
         {
           ftime[j].wasFed = false;
         }
