@@ -20,12 +20,16 @@ typedef struct
 }  feedingtime;
 
 //defining all important thingies
+//RTC
 DS1302 rtc(CLK_RST, CLK_IO, CLK_SCLK);
+//Servo
 Servo servo;
+//IR receiver
 IRrecv irrecv(IR);
-int water_level;
+decode_results results;
 int i;
 int j;
+int water_level;
 
 //defining model parameters
 const int water_full = 650;
@@ -64,6 +68,7 @@ void setup()
   pinMode(SERVO_ENABLE, OUTPUT);
   irrecv.enableIRIn();
   rtc.halt(false);
+  irrecv.enableIRIn(); // Start the IR receiver
   //following things are here only for development testing purposes
   //feedingtest.day = Time::kWednesday;
 
@@ -87,26 +92,27 @@ void loop()
            t.hr, t.min, t.sec);
 
   // Print the formatted string to serial so we can see the time.
-  Serial.println(buf);
+ // Serial.println(buf);
 
   for(j=0;j<2;j++)
   {
-    Serial.print(feedingcalendar[j].hour);
-    Serial.print(":");
-    Serial.print(feedingcalendar[j].minute);
-    Serial.print(" was already fed?  ");
-    Serial.print(feedingcalendar[j].wasFed);
-    Serial.print("  ");
+//    Serial.print(feedingcalendar[j].hour);
+//    Serial.print(":");
+//    Serial.print(feedingcalendar[j].minute);
+//    Serial.print(" was already fed?  ");
+//    Serial.print(feedingcalendar[j].wasFed);
+//    Serial.print("  ");
   }
   if(CanWeFeed(feedingcalendar, feedingsPerDay)==true)
   {
-    Serial.println("we should feed now!!!!");
+    //Serial.println("we should feed now!!!!");
     refill_food(); // feeding time :D
   }
   
-  else Serial.println("No feeding, sorry :(");
+  //else Serial.println("No feeding, sorry :(");
 
  // refill_water();
+ IRreceive();
 
 }
 
@@ -131,7 +137,7 @@ void refill_food()
   servo.writeMicroseconds(0);
   delay(food_refill_time_ms);
   servo.writeMicroseconds(1500);
-  //delay(1000);  //wating for servo to stabilize
+  //delay(5000);  //wating for servo to stabilize
   digitalWrite(SERVO_ENABLE, LOW);
 }
 
@@ -166,5 +172,18 @@ bool CanWeFeed(feedingtime ftime[], int arraySize)
     {
       return false;
     }
+}
+
+void IRreceive()
+{
+  if (irrecv.decode(&results))
+  {
+    Serial.println(results.value, HEX);
+    if((results.value == 0x9716BE3F) || (results.value == 0xFF30CF))
+    {
+      refill_food();
+    }
+    irrecv.resume(); // Receive the next value
+  }
 }
 
